@@ -54,10 +54,12 @@ if __name__ == "__main__":
     create_manifestation()`);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<{prompt: string, code: string, timestamp: Date}[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!prompt) return;
     setIsGenerating(true);
+    setError(null);
     
     try {
       const result = await generateBlenderScript(prompt);
@@ -70,10 +72,11 @@ if __name__ == "__main__":
         setCode(result.script);
         setHistory(prev => [newManifestation, ...prev]);
       } else {
-        // Handle error toast
+        setError(result.error || "Manifestation failed.");
         console.error(result.error);
       }
     } catch (err) {
+      setError("Critical Aether Error. Connection lost.");
       console.error("Critical Aether Error:", err);
     } finally {
       setIsGenerating(false);
@@ -226,6 +229,21 @@ if __name__ == "__main__":
       {/* Footer: Prompt Input Area */}
       <footer className="p-6 bg-slate-950 border-t border-slate-900 relative">
         <div className="max-w-4xl mx-auto relative group">
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute -top-12 left-0 right-0 flex justify-center"
+              >
+                <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 backdrop-blur-sm">
+                   <Box className="w-3.5 h-3.5" />
+                   {error}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Glowing background effect for input */}
           <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur opacity-10 group-focus-within:opacity-25 transition duration-500"></div>
           

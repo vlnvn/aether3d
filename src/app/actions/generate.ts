@@ -2,7 +2,8 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || "");
+const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey || "");
 
 const SYSTEM_PROMPT = `
 You are a Senior Technical Artist and Expert in Blender Python Automation (bpy).
@@ -24,6 +25,14 @@ The user wants a 'manifestation'—not just a 3D model. Use exaggerated proporti
 `;
 
 export async function generateBlenderScript(prompt: string) {
+  if (!apiKey || apiKey === "your_api_key_here") {
+    console.error("Aether Engine Error: API Key is missing or using placeholder.");
+    return { 
+      success: false, 
+      error: "Aether Core missing. Please set your GEMINI_API_KEY in .env.local." 
+    };
+  }
+
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
     
@@ -39,8 +48,14 @@ export async function generateBlenderScript(prompt: string) {
     text = text.replace(/```python/g, "").replace(/```/g, "").trim();
     
     return { success: true, script: text };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Aether Engine Error:", error);
-    return { success: false, error: "Manifestation failed. Check your Aether connection." };
+    
+    // Provide more specific error messages if possible
+    const errorMessage = error?.message?.includes("API_KEY_INVALID") 
+      ? "Invalid Aether Key. Please check your Gemini API Key."
+      : "Manifestation failed. Check your Aether connection or quota.";
+
+    return { success: false, error: errorMessage };
   }
 }
