@@ -1,9 +1,18 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { VertexAI } from "@google-cloud/vertexai";
+import path from "path";
 
-const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey || "");
+// Masterclass Config: Pointing to the Service Account key
+const PROJECT_ID = "aether3d-495817";
+const LOCATION = "us-central1"; 
+const KEY_FILE_PATH = path.join(process.cwd(), "gcp-key.json");
+
+// Setting environment variable for Google Cloud SDK to find the key
+process.env.GOOGLE_APPLICATION_CREDENTIALS = KEY_FILE_PATH;
+
+// Initializing Vertex AI with Masterclass Precision
+const vertexAI = new VertexAI({ project: PROJECT_ID, location: LOCATION });
 
 const SYSTEM_PROMPT = `
 You are a World-Class Senior Technical Artist and Expert in Blender Python Automation (bpy).
@@ -23,7 +32,6 @@ Your mission is to manifest high-quality, stylized 3D geometry from natural lang
 
 3. STYLIZATION & VIBE:
    The user wants a 'manifestation'. Use exaggerated proportions, cinematic lighting cues, and visual storytelling. 
-   Example: 'tree' becomes a 'twisted mahogany trunk with floating golden low-poly shards'.
 
 4. WEB PREVIEW JSON (The Proxy):
    Provide a representative set of max 15 primitives.
@@ -33,24 +41,29 @@ Your mission is to manifest high-quality, stylized 3D geometry from natural lang
 `;
 
 export async function generateBlenderScript(prompt: string) {
-  if (!apiKey || apiKey === "your_api_key_here") {
+  if (!PROJECT_ID) {
     return { 
       success: false, 
-      error: "Aether Core missing. Please set your GEMINI_API_KEY in .env.local." 
+      error: "Google Cloud Project ID missing. Set GOOGLE_CLOUD_PROJECT_ID in .env.local." 
     };
   }
 
   try {
-    // Upgrading to gemini-2.0-flash for superior reasoning and 3D spatial logic
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    
-    const result = await model.generateContent([
-      { text: SYSTEM_PROMPT },
-      { text: `Manifest this intent into a Masterclass 3D asset: ${prompt}` }
-    ]);
-    
+    // Upgrading to gemini-2.0-pro (The Master Model) via Vertex AI
+    const generativeModel = vertexAI.preview.getGenerativeModel({
+      model: "gemini-2.0-pro-exp-02-05", // Professional Grade Model
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.7,
+      },
+    });
+
+    const result = await generativeModel.generateContent({
+      contents: [{ role: "user", parts: [{ text: `${SYSTEM_PROMPT}\n\nManifest this intent: ${prompt}` }] }],
+    });
+
     const response = await result.response;
-    const fullText = response.text();
+    const fullText = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
     
     // Parse the delimited output
     const sections = fullText.split("---WEB_PREVIEW_JSON---");
@@ -72,11 +85,10 @@ export async function generateBlenderScript(prompt: string) {
         visualData: visualData 
     };
   } catch (error: any) {
-    console.error("Aether Engine Error:", error);
-    const errorMessage = error?.message?.includes("quota") 
-        ? "Quota exceeded. Retrying in 60s..."
-        : "Manifestation failed. Check Aether Core.";
-
-    return { success: false, error: errorMessage };
+    console.error("Vertex Aether Engine Error:", error);
+    return { 
+        success: false, 
+        error: "Manifestation failed on Vertex AI. Check Cloud Console permissions." 
+    };
   }
 }
