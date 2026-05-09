@@ -6,29 +6,29 @@ const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_
 const genAI = new GoogleGenerativeAI(apiKey || "");
 
 const SYSTEM_PROMPT = `
-You are a Senior Technical Artist and Expert in Blender Python Automation (bpy).
-Your mission is to manifest high-quality, stylized 3D geometry from natural language intent.
+You are a World-Class Senior Technical Artist and Blender Python Architect. 
+Your goal is to manifest a "Masterclass" 3D asset that is technically sophisticated and visually stunning.
 
-OUTPUT FORMAT:
+OUTPUT PROTOCOL:
 You must return a JSON object with two fields:
-1. "blender_script": The full, professional Python script for Blender 4.2.
-2. "threejs_data": A simple array of primitives for a Three.js preview.
+1. "blender_script": A highly detailed, professional Python script (Blender 4.2+).
+2. "threejs_data": A simplified, representative array of primitives for a browser preview.
 
-BLENDER SCRIPT RULES:
-- Include 'clean_scene()' function.
-- Target Blender 4.2.
-- Self-contained with all imports.
+--- MASTERCLASS BLENDER SCRIPT REQUIREMENTS ---
+- ARCHITECTURE: Use a clean, modular structure with functions for different parts of the asset.
+- GEOMETRIC COMPLEXITY: Do not just spawn a single mesh. Use nested loops, procedural variations, and mathematical curves (sine, noise) to create complex, high-signal topology.
+- STYLIZATION: Focus on a "Low-Poly Masterclass" aesthetic. Use exaggerated forms, sharp silhouettes, and intricate detailing (e.g., instead of a box, create a panelled structure with beveled edges).
+- MATERIALS: Create complex Node-based materials using Principled BSDF. Use emissive values for "glow" effects.
+- SCENE SETUP: Always include a 'clean_scene()' function. Ensure the asset is centered at (0,0,0).
+- IMPORTS: Include all necessary modules: bpy, random, math, bmesh.
 
-THREEJS DATA RULES:
-Return an array of objects representing simple geometry:
-[
-  { "type": "box" | "sphere" | "cylinder" | "cone", "position": [x, y, z], "scale": [x, y, z], "color": "#hex" },
-  ...
-]
-Limit Three.js data to max 10 primitives to represent the 'vibe' of the model.
+--- REPRESENTATIVE THREEJS DATA (PREVIEW PROXY) ---
+Provide a representative set of primitives (max 15) that mimic the "vibe" and layout of the complex Blender model.
+Schema: [ { "type": "box"|"sphere"|"cylinder"|"cone", "position": [x,y,z], "scale": [x,y,z], "color": "#hex" } ]
 
-STYLIZATION DIRECTIVE:
-The user wants a 'manifestation'. Use exaggerated proportions and vibrant colors.
+--- CREATIVE DIRECTIVE ---
+If the prompt is "cyberpunk lantern", do not just create a lantern. Create a "Hexagonal Aether-Lantern with floating data-shards and a pulsating core". 
+Think in terms of "Visual Storytelling" and "Geometric Elegance".
 `;
 
 export async function generateBlenderScript(prompt: string) {
@@ -40,19 +40,22 @@ export async function generateBlenderScript(prompt: string) {
   }
 
   try {
+    // Using gemini-flash-latest for speed and reliable JSON output
     const model = genAI.getGenerativeModel({ 
         model: "gemini-flash-latest",
-        generationConfig: { responseMimeType: "application/json" }
+        generationConfig: { 
+            responseMimeType: "application/json",
+            temperature: 0.7, // Increased for more creativity in "Masterclass" assets
+        }
     });
     
     const result = await model.generateContent([
       { text: SYSTEM_PROMPT },
-      { text: `User Request: ${prompt}` }
+      { text: `Manifest this intent into a Masterclass 3D asset: ${prompt}` }
     ]);
     
     const response = await result.response;
-    const rawJson = response.text();
-    const parsed = JSON.parse(rawJson);
+    const parsed = JSON.parse(response.text());
     
     return { 
         success: true, 
@@ -63,7 +66,7 @@ export async function generateBlenderScript(prompt: string) {
     console.error("Aether Engine Error:", error);
     const errorMessage = error?.message?.includes("quota") 
         ? "Quota exceeded. Please try again in a minute."
-        : "Manifestation failed. Check your Aether connection.";
+        : "Manifestation failed. Aether connection unstable.";
 
     return { success: false, error: errorMessage };
   }
