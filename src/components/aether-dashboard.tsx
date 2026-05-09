@@ -31,6 +31,15 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { generateBlenderScript } from "@/app/actions/generate";
 
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetTrigger,
+  SheetDescription
+} from "@/components/ui/sheet";
+
 export default function AetherDashboard() {
   const [prompt, setPrompt] = useState("");
   const [code, setCode] = useState(`# Aether3D Generated Blender Script
@@ -44,6 +53,7 @@ def create_manifestation():
 if __name__ == "__main__":
     create_manifestation()`);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [history, setHistory] = useState<{prompt: string, code: string, timestamp: Date}[]>([]);
 
   const handleGenerate = async () => {
     if (!prompt) return;
@@ -52,7 +62,13 @@ if __name__ == "__main__":
     try {
       const result = await generateBlenderScript(prompt);
       if (result.success && result.script) {
+        const newManifestation = {
+          prompt,
+          code: result.script,
+          timestamp: new Date()
+        };
         setCode(result.script);
+        setHistory(prev => [newManifestation, ...prev]);
       } else {
         // Handle error toast
         console.error(result.error);
@@ -67,6 +83,11 @@ if __name__ == "__main__":
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     // Add toast notification later
+  };
+
+  const restoreManifestation = (item: {prompt: string, code: string}) => {
+    setPrompt(item.prompt);
+    setCode(item.code);
   };
 
   return (
@@ -88,12 +109,52 @@ if __name__ == "__main__":
         </div>
 
         <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger render={<Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800" />}>
-              <History className="w-4 h-4" />
-            </TooltipTrigger>
-            <TooltipContent>History</TooltipContent>
-          </Tooltip>
+          <Sheet>
+            <Tooltip>
+              <SheetTrigger render={<TooltipTrigger render={<Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800" />} />}>
+                <History className="w-4 h-4" />
+              </SheetTrigger>
+              <TooltipContent>History</TooltipContent>
+            </Tooltip>
+            <SheetContent side="right" className="w-[400px] bg-slate-950 border-slate-800 text-slate-200 p-0 flex flex-col">
+               <SheetHeader className="p-6 border-b border-slate-900">
+                  <SheetTitle className="text-slate-100 flex items-center gap-2">
+                     <History className="w-5 h-5 text-blue-500" />
+                     Manifestation History
+                  </SheetTitle>
+                  <SheetDescription className="text-slate-500 text-xs">
+                     Your previous Aether3D creations from this session.
+                  </SheetDescription>
+               </SheetHeader>
+               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+                  {history.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center opacity-40 py-20 text-center px-6">
+                       <Sparkles className="w-12 h-12 mb-4" />
+                       <p className="text-sm font-medium">The Aether is empty.</p>
+                       <p className="text-[10px] uppercase tracking-widest mt-1">Start manifesting to build your history.</p>
+                    </div>
+                  ) : (
+                    history.map((item, index) => (
+                      <button 
+                        key={index} 
+                        onClick={() => restoreManifestation(item)}
+                        className="w-full text-left p-4 rounded-xl border border-slate-900 bg-slate-900/40 hover:bg-slate-900 hover:border-slate-700 transition-all group"
+                      >
+                         <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-mono text-blue-500 uppercase tracking-tighter">
+                               {item.timestamp.toLocaleTimeString()}
+                            </span>
+                            <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                         </div>
+                         <p className="text-sm line-clamp-2 text-slate-300 font-medium">
+                            {item.prompt}
+                         </p>
+                      </button>
+                    ))
+                  )}
+               </div>
+            </SheetContent>
+          </Sheet>
           <Tooltip>
             <TooltipTrigger render={<Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800" />}>
               <Settings className="w-4 h-4" />
