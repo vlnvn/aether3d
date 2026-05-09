@@ -1,37 +1,24 @@
-# 🏆 Project: #JuaraVibeCoding Championship
+# 🏆 Project: Aether3D (#JuaraVibeCoding)
 
-## 🎯 Mission Statement
-To build a world-class, impactful, and unique application that wins the **#JuaraVibeCoding** competition. We operate as a professional AI-Human partnership, leveraging "Vibe Coding" to transform creative vision into a deployed reality.
+## 🎯 Strategic Intent
+To dominate the **#JuaraVibeCoding** competition by delivering a high-uniqueness tool that bridges AI intent with professional 3D software (Blender). We are currently in **Phase 3: UI Excellence & Deployment**.
 
-## 📊 Competition Context
-- **Deadline:** May 31, 2026
-- **Primary Tech Stack:** Google AI Studio (Gemini), Google Cloud Run (Deployment).
-- **Categories:** Games, Productivity, Education, Sustainability, Daily Life.
+## 📊 Current Progress
+- [x] **Phase 1: Stabilization:** Fixed environment issues (folder name) and build errors.
+- [x] **Phase 2: Core Engine:** Gemini 1.5 Pro integration for `bpy` (Blender Python) generation.
+- [x] **Phase 3: UI/UX "Wow" Factor:** Interactive 3D preview (R3F) with manifestation scanning animations and cinematic overlays.
+- [ ] **Phase 4: Deployment:** Cloud Run configuration ready (Dockerfile & CloudBuild).
 
-## ⚖️ Judging Criteria (The Winning Formula)
-1. **Problem (30%):** Does the application solve a clear, real-world pain point?
-2. **Solution (40%):** Is the UX intuitive? Is the functionality robust and complete?
-3. **Uniqueness (30%):** Does it have the "wow" factor? Is the idea original?
+## ⚖️ Judging Alignment
+1. **Problem (30%):** Solves 3D asset fatigue for indie developers.
+2. **Solution (40%):** Zero-error code generation with real-time browser preview.
+3. **Uniqueness (30%):** Text-to-3D-Script bridge is a highly original concept for this competition.
 
-## 🚀 Professional Workflow
-1. **Research & Ideation:** Identify a high-impact problem in one of the categories.
-2. **Vibe Prototyping:** Use Gemini to generate code, UI, and logic iteratively.
-3. **Deployment:** Continuous deployment to Google Cloud Run.
-4. **Validation:** Rigorous testing of the live URL.
-5. **Storytelling:** Preparing the 2-3 minute LinkedIn demo video.
-
-## 🛠️ Mandatory Tech Requirements
-- **LLM:** Google AI Studio / Gemini.
-- **Deployment:** Google Cloud Run (must provide active URL).
-- **Visibility:** LinkedIn post with #JuaraVibeCoding hashtag.
-
-## 📅 Roadmap
-- **Phase 1: Ideation (Current):** Define the problem and category.
-- **Phase 2: Development:** Iterative build using Gemini CLI.
-- **Phase 3: Deployment & Refinement:** Push to Cloud Run and polish UI/UX.
-- **Phase 4: Submission:** Final URL check and demo video production.
+## 🚀 Execution Commands
+- **Dev:** `npm run dev`
+- **Build:** `npm run build`
+- **Deploy:** `gcloud builds submit --config cloudbuild.yaml` (Requires GCP Project)
 
 ## 📜 Development Conventions
-- **Professionalism:** Focus on high-signal code and polished aesthetics.
-- **Vibe Coding Excellence:** Prioritize natural language intent and rapid iteration.
-- **Traceability:** Keep `GEMINI.md` updated with our current strategic intent.
+- **Professionalism:** Surgical updates, clean TypeScript, and polished aesthetics.
+- **Manifestation Logic:** All 3D assets must follow the "Stylized" aesthetic for maximum visual impact.

@@ -89,18 +89,14 @@ if __name__ == "__main__":
 
         <div className="flex items-center gap-2">
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800">
-                <History className="w-4 h-4" />
-              </Button>
+            <TooltipTrigger render={<Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800" />}>
+              <History className="w-4 h-4" />
             </TooltipTrigger>
             <TooltipContent>History</TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800">
-                <Settings className="w-4 h-4" />
-              </Button>
+            <TooltipTrigger render={<Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800" />}>
+              <Settings className="w-4 h-4" />
             </TooltipTrigger>
             <TooltipContent>Settings</TooltipContent>
           </Tooltip>
@@ -130,7 +126,7 @@ if __name__ == "__main__":
                 </div>
              </div>
              <div className="flex-1 min-h-0">
-                <Preview3D />
+                <Preview3D isGenerating={isGenerating} />
              </div>
           </div>
 
@@ -157,7 +153,6 @@ if __name__ == "__main__":
                     fontSize: 13,
                     fontFamily: "var(--font-geist-mono)",
                     padding: { top: 10 },
-                    backgroundColor: "#020617",
                     scrollBeyondLastLine: false,
                     readOnly: true,
                   }}
