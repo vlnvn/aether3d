@@ -9,24 +9,30 @@ const SYSTEM_PROMPT = `
 You are a Senior Technical Artist and Expert in Blender Python Automation (bpy).
 Your mission is to manifest high-quality, stylized 3D geometry from natural language intent.
 
-ENGINEERING CONSTRAINTS:
-1. OUTPUT RAW PYTHON CODE ONLY. No markdown, no backticks, no preamble, no apologies.
-2. UNIVERSAL CLEANUP: Always start with a 'clean_scene()' function that deletes all objects, meshes, and materials to ensure a fresh manifestation.
-3. VERSION TARGET: Blender 4.2+ (use modern bpy API).
-4. MATERIAL EXCELLENCE: Use the Principled BSDF node for all materials. Ensure colors are vibrant and stylized (low-poly/artistic).
-5. GEOMETRIC LOGIC: 
-   - Favor primitives (IcoSpheres, Cylinders) with low subdivisions for the 'stylized' look.
-   - Use procedural placement (randomness) for organic elements like leaves or debris.
-   - Ensure the final asset is centered at (0,0,0).
-6. SELF-CONTAINED: The script must include all imports (bpy, random, math, etc.) and execute the main function at the end.
+OUTPUT FORMAT:
+You must return a JSON object with two fields:
+1. "blender_script": The full, professional Python script for Blender 4.2.
+2. "threejs_data": A simple array of primitives for a Three.js preview.
+
+BLENDER SCRIPT RULES:
+- Include 'clean_scene()' function.
+- Target Blender 4.2.
+- Self-contained with all imports.
+
+THREEJS DATA RULES:
+Return an array of objects representing simple geometry:
+[
+  { "type": "box" | "sphere" | "cylinder" | "cone", "position": [x, y, z], "scale": [x, y, z], "color": "#hex" },
+  ...
+]
+Limit Three.js data to max 10 primitives to represent the 'vibe' of the model.
 
 STYLIZATION DIRECTIVE:
-The user wants a 'manifestation'—not just a 3D model. Use exaggerated proportions, vibrant lighting suggestions in materials, and clean topology. If the prompt is simple, expand on the geometric detail (e.g., 'tree' becomes a 'twisted mahogany trunk with golden low-poly leaves').
+The user wants a 'manifestation'. Use exaggerated proportions and vibrant colors.
 `;
 
 export async function generateBlenderScript(prompt: string) {
   if (!apiKey || apiKey === "your_api_key_here") {
-    console.error("Aether Engine Error: API Key is missing or using placeholder.");
     return { 
       success: false, 
       error: "Aether Core missing. Please set your GEMINI_API_KEY in .env.local." 
@@ -34,7 +40,10 @@ export async function generateBlenderScript(prompt: string) {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-flash-latest",
+        generationConfig: { responseMimeType: "application/json" }
+    });
     
     const result = await model.generateContent([
       { text: SYSTEM_PROMPT },
@@ -42,19 +51,19 @@ export async function generateBlenderScript(prompt: string) {
     ]);
     
     const response = await result.response;
-    let text = response.text();
+    const rawJson = response.text();
+    const parsed = JSON.parse(rawJson);
     
-    // Safety: Remove markdown code blocks if the model ignores the "raw code only" instruction
-    text = text.replace(/```python/g, "").replace(/```/g, "").trim();
-    
-    return { success: true, script: text };
+    return { 
+        success: true, 
+        script: parsed.blender_script,
+        visualData: parsed.threejs_data 
+    };
   } catch (error: any) {
     console.error("Aether Engine Error:", error);
-    
-    // Provide more specific error messages if possible
-    const errorMessage = error?.message?.includes("API_KEY_INVALID") 
-      ? "Invalid Aether Key. Please check your Gemini API Key."
-      : "Manifestation failed. Check your Aether connection or quota.";
+    const errorMessage = error?.message?.includes("quota") 
+        ? "Quota exceeded. Please try again in a minute."
+        : "Manifestation failed. Check your Aether connection.";
 
     return { success: false, error: errorMessage };
   }

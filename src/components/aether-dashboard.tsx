@@ -52,8 +52,10 @@ def create_manifestation():
 
 if __name__ == "__main__":
     create_manifestation()`);
+  
+  const [visualData, setVisualData] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [history, setHistory] = useState<{prompt: string, code: string, timestamp: Date}[]>([]);
+  const [history, setHistory] = useState<{prompt: string, code: string, visualData: any[], timestamp: Date}[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
@@ -67,9 +69,11 @@ if __name__ == "__main__":
         const newManifestation = {
           prompt,
           code: result.script,
+          visualData: result.visualData || [],
           timestamp: new Date()
         };
         setCode(result.script);
+        setVisualData(result.visualData || []);
         setHistory(prev => [newManifestation, ...prev]);
       } else {
         setError(result.error || "Manifestation failed.");
@@ -88,9 +92,10 @@ if __name__ == "__main__":
     // Add toast notification later
   };
 
-  const restoreManifestation = (item: {prompt: string, code: string}) => {
+  const restoreManifestation = (item: {prompt: string, code: string, visualData: any[]}) => {
     setPrompt(item.prompt);
     setCode(item.code);
+    setVisualData(item.visualData);
   };
 
   return (
@@ -190,7 +195,7 @@ if __name__ == "__main__":
                 </div>
              </div>
              <div className="flex-1 min-h-0">
-                <Preview3D isGenerating={isGenerating} />
+                <Preview3D isGenerating={isGenerating} visualData={visualData} />
              </div>
           </div>
 

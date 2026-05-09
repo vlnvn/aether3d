@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface Preview3DProps {
   isGenerating?: boolean;
+  visualData?: any[];
   children?: React.ReactNode;
 }
 
-const Preview3D: React.FC<Preview3DProps> = ({ isGenerating, children }) => {
+const Preview3D: React.FC<Preview3DProps> = ({ isGenerating, visualData = [], children }) => {
   return (
     <div className="w-full h-full min-h-[400px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800 shadow-2xl relative group">
       <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
@@ -44,11 +45,29 @@ const Preview3D: React.FC<Preview3DProps> = ({ isGenerating, children }) => {
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={[5, 5, 5]} fov={50} />
           <Stage intensity={0.5} environment="city" adjustCamera={false}>
-            {/* Default Placeholder: A stylized wireframe grid or sphere */}
-            <mesh>
-              <sphereGeometry args={[1, 32, 32]} />
-              <meshStandardMaterial color={isGenerating ? "#3b82f6" : "#1e293b"} wireframe opacity={0.5} transparent />
-            </mesh>
+            {/* Dynamic Manifestation Rendering */}
+            {visualData.length === 0 ? (
+              <mesh>
+                <sphereGeometry args={[1, 32, 32]} />
+                <meshStandardMaterial color={isGenerating ? "#3b82f6" : "#1e293b"} wireframe opacity={0.5} transparent />
+              </mesh>
+            ) : (
+              visualData.map((obj, i) => (
+                <mesh key={i} position={obj.position || [0, 0, 0]} scale={obj.scale || [1, 1, 1]}>
+                  {obj.type === 'box' && <boxGeometry />}
+                  {obj.type === 'sphere' && <sphereGeometry args={[0.5, 32, 32]} />}
+                  {obj.type === 'cylinder' && <cylinderGeometry args={[0.5, 0.5, 1, 16]} />}
+                  {obj.type === 'cone' && <coneGeometry args={[0.5, 1, 16]} />}
+                  <meshStandardMaterial 
+                    color={obj.color || "#3b82f6"} 
+                    emissive={obj.color || "#3b82f6"} 
+                    emissiveIntensity={0.2}
+                    roughness={0.3}
+                    metalness={0.8}
+                  />
+                </mesh>
+              ))
+            )}
             {children}
           </Stage>
           <Grid 
@@ -61,14 +80,14 @@ const Preview3D: React.FC<Preview3DProps> = ({ isGenerating, children }) => {
             sectionSize={5}
             position={[0, -1.5, 0]}
           />
-          <OrbitControls makeDefault autoRotate={!isGenerating} autoRotateSpeed={0.5} />
+          <OrbitControls makeDefault autoRotate={!isGenerating && visualData.length === 0} autoRotateSpeed={0.5} />
           <Environment preset="city" />
         </Suspense>
       </Canvas>
 
       <div className="absolute bottom-4 right-4 z-10">
          <div className="text-[10px] text-slate-500 font-mono bg-slate-950/80 px-2 py-1 rounded backdrop-blur-sm border border-slate-800">
-            FPS: 60 | TRIS: 1.2k | STATUS: {isGenerating ? 'MANIFESTING...' : 'IDLE'}
+            FPS: 60 | TRIS: {visualData.length > 0 ? `${(visualData.length * 1.2).toFixed(1)}k` : '1.2k'} | STATUS: {isGenerating ? 'MANIFESTING...' : 'IDLE'}
          </div>
       </div>
     </div>
