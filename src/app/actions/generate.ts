@@ -3,7 +3,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // 1. STABLE CONFIGURATION
-// Prioritizing the permanent AI Studio Key provided by the user
 const API_KEY = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 const SYSTEM_PROMPT = `
@@ -20,18 +19,21 @@ Your mission is to manifest high-quality, stylized 3D geometry from natural lang
    - Ensure the asset is centered at (0,0,0).
 
 3. WEB PREVIEW JSON Schema: [ { "type": "box"|"sphere"|"cylinder"|"cone", "position": [x,y,z], "scale": [x,y,z], "color": "#hex" } ]
+
+--- NO PREAMBLE. NO MARKDOWN. NO EXPLANATIONS. START WITH IMPORTS. ---
 `;
 
 export async function generateBlenderScript(prompt: string) {
-  if (!API_KEY || API_KEY.startsWith("AQ.")) {
-    return { success: false, error: "Invalid Aether Key. Please use a permanent AIza key." };
+  if (!API_KEY || API_KEY === "your_api_key_here") {
+    return { success: false, error: "Aether Key missing. Please set your API Key." };
   }
 
   try {
     const genAI = new GoogleGenerativeAI(API_KEY);
-    // Using gemini-1.5-pro for high-fidelity technical artist reasoning
+    
+    // Identified as ACTIVE and SUPPORTED for this project key in 2026
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-pro",
+        model: "gemini-2.0-flash",
         generationConfig: {
             maxOutputTokens: 4096,
             temperature: 0.8,
@@ -68,8 +70,8 @@ export async function generateBlenderScript(prompt: string) {
     console.error("Aether Core Error:", error);
     let msg = "Manifestation failed. ";
     if (error.message?.includes("429")) msg += "Aether overloaded. Wait 60s.";
-    else if (error.message?.includes("API_KEY_INVALID")) msg += "Invalid Aether Key.";
-    else msg += "Check Aether connection.";
+    else if (error.message?.includes("404")) msg += "Engine Mismatch. Try gemini-pro-latest.";
+    else msg += error.message || "Check Aether connection.";
 
     return { success: false, error: msg };
   }
