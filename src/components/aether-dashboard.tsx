@@ -55,8 +55,27 @@ if __name__ == "__main__":
   
   const [visualData, setVisualData] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [history, setHistory] = useState<{prompt: string, code: string, visualData: any[], timestamp: Date}[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const streamCode = (fullCode: string) => {
+    setIsStreaming(true);
+    let currentCode = "";
+    const lines = fullCode.split("\n");
+    let lineIndex = 0;
+
+    const interval = setInterval(() => {
+      if (lineIndex < lines.length) {
+        currentCode += lines[lineIndex] + "\n";
+        setCode(currentCode);
+        lineIndex++;
+      } else {
+        clearInterval(interval);
+        setIsStreaming(false);
+      }
+    }, 30); // Fast professional streaming
+  };
 
   const handleGenerate = async () => {
     if (!prompt) return;
@@ -72,9 +91,13 @@ if __name__ == "__main__":
           visualData: result.visualData || [],
           timestamp: new Date()
         };
-        setCode(result.script);
+        
+        // Manifest visuals instantly
         setVisualData(result.visualData || []);
         setHistory(prev => [newManifestation, ...prev]);
+        
+        // Stream the code for 'Wow' factor
+        streamCode(result.script);
       } else {
         setError(result.error || "Manifestation failed.");
         console.error(result.error);
@@ -114,6 +137,10 @@ if __name__ == "__main__":
           <Badge variant="outline" className="bg-blue-500/5 text-blue-400 border-blue-500/20 px-2 py-0 text-[10px] uppercase font-mono tracking-widest">
             Experimental v1.0
           </Badge>
+          <div className="flex items-center gap-1.5 ml-2 px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 rounded-full">
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            <span className="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">Championship Grade</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
