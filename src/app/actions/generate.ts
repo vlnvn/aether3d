@@ -6,29 +6,30 @@ const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_
 const genAI = new GoogleGenerativeAI(apiKey || "");
 
 const SYSTEM_PROMPT = `
-You are a World-Class Senior Technical Artist and Blender Python Architect. 
-Your goal is to manifest a "Masterclass" 3D asset that is technically sophisticated and visually stunning.
+You are a World-Class Senior Technical Artist and Expert in Blender Python Automation (bpy).
+Your mission is to manifest high-quality, stylized 3D geometry from natural language intent.
 
-OUTPUT PROTOCOL:
-You must return a JSON object with two fields:
-1. "blender_script": A highly detailed, professional Python script (Blender 4.2+).
-2. "threejs_data": A simplified, representative array of primitives for a browser preview.
+--- THE MASTERCLASS DIRECTIVE ---
+1. OUTPUT STRUCTURE: You must output two distinct sections:
+   SECTION 1: RAW PYTHON CODE. This is your primary focus. Make it complex, detailed, and professional.
+   SECTION 2: A delimiter line "---WEB_PREVIEW_JSON---" followed by a simplified JSON array of primitives for the web UI.
 
---- MASTERCLASS BLENDER SCRIPT REQUIREMENTS ---
-- ARCHITECTURE: Use a clean, modular structure with functions for different parts of the asset.
-- GEOMETRIC COMPLEXITY: Do not just spawn a single mesh. Use nested loops, procedural variations, and mathematical curves (sine, noise) to create complex, high-signal topology.
-- STYLIZATION: Focus on a "Low-Poly Masterclass" aesthetic. Use exaggerated forms, sharp silhouettes, and intricate detailing (e.g., instead of a box, create a panelled structure with beveled edges).
-- MATERIALS: Create complex Node-based materials using Principled BSDF. Use emissive values for "glow" effects.
-- SCENE SETUP: Always include a 'clean_scene()' function. Ensure the asset is centered at (0,0,0).
-- IMPORTS: Include all necessary modules: bpy, random, math, bmesh.
+2. BLENDER PYTHON (bpy) EXCELLENCE:
+   - Use 'clean_scene()' to start.
+   - Use 'bmesh' for advanced topology manipulation.
+   - GEOMETRIC LOGIC: Do not just spawn primitives. Use nested loops, procedural placement, beveled edges, and mathematical curves (sine/noise) to create high-signal, intricate models.
+   - MATERIAL EXCELLENCE: Use Principled BSDF with vibrant, stylized colors and emissive glows.
+   - VERSION: Target Blender 4.2+.
 
---- REPRESENTATIVE THREEJS DATA (PREVIEW PROXY) ---
-Provide a representative set of primitives (max 15) that mimic the "vibe" and layout of the complex Blender model.
-Schema: [ { "type": "box"|"sphere"|"cylinder"|"cone", "position": [x,y,z], "scale": [x,y,z], "color": "#hex" } ]
+3. STYLIZATION & VIBE:
+   The user wants a 'manifestation'. Use exaggerated proportions, cinematic lighting cues, and visual storytelling. 
+   Example: 'tree' becomes a 'twisted mahogany trunk with floating golden low-poly shards'.
 
---- CREATIVE DIRECTIVE ---
-If the prompt is "cyberpunk lantern", do not just create a lantern. Create a "Hexagonal Aether-Lantern with floating data-shards and a pulsating core". 
-Think in terms of "Visual Storytelling" and "Geometric Elegance".
+4. WEB PREVIEW JSON (The Proxy):
+   Provide a representative set of max 15 primitives.
+   Schema: [ { "type": "box"|"sphere"|"cylinder"|"cone", "position": [x,y,z], "scale": [x,y,z], "color": "#hex" } ]
+
+--- NO PREAMBLE. NO MARKDOWN. NO EXPLANATIONS. START WITH IMPORTS. ---
 `;
 
 export async function generateBlenderScript(prompt: string) {
@@ -40,14 +41,8 @@ export async function generateBlenderScript(prompt: string) {
   }
 
   try {
-    // Using gemini-flash-latest for speed and reliable JSON output
-    const model = genAI.getGenerativeModel({ 
-        model: "gemini-flash-latest",
-        generationConfig: { 
-            responseMimeType: "application/json",
-            temperature: 0.7, // Increased for more creativity in "Masterclass" assets
-        }
-    });
+    // Upgrading to gemini-2.0-flash for superior reasoning and 3D spatial logic
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
     const result = await model.generateContent([
       { text: SYSTEM_PROMPT },
@@ -55,18 +50,32 @@ export async function generateBlenderScript(prompt: string) {
     ]);
     
     const response = await result.response;
-    const parsed = JSON.parse(response.text());
+    const fullText = response.text();
+    
+    // Parse the delimited output
+    const sections = fullText.split("---WEB_PREVIEW_JSON---");
+    const pythonCode = sections[0].replace(/```python/g, "").replace(/```/g, "").trim();
+    let visualData = [];
+    
+    if (sections[1]) {
+        try {
+            const jsonText = sections[1].trim();
+            visualData = JSON.parse(jsonText);
+        } catch (e) {
+            console.warn("Aether Preview Parser Warning:", e);
+        }
+    }
     
     return { 
         success: true, 
-        script: parsed.blender_script,
-        visualData: parsed.threejs_data 
+        script: pythonCode,
+        visualData: visualData 
     };
   } catch (error: any) {
     console.error("Aether Engine Error:", error);
     const errorMessage = error?.message?.includes("quota") 
-        ? "Quota exceeded. Please try again in a minute."
-        : "Manifestation failed. Aether connection unstable.";
+        ? "Quota exceeded. Retrying in 60s..."
+        : "Manifestation failed. Check Aether Core.";
 
     return { success: false, error: errorMessage };
   }
